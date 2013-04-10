@@ -1,0 +1,19 @@
+// vmath
+#[link(name = "vmath",
+       vers = "0.1",
+       uuid = "19ec5cb0-9faf-11e2-9e96-0800200c9a66",
+       url = "http://github.com/hyperlogic/vmath")]
+#[comment = "3D Vector Math Library"]
+#[license = "MIT"]
+#[author = "Anthony J. Thibault"]
+#[crate_type = "lib"]
+#[warn(non_camel_case_types)]
+
+pub mod vec2;
+pub mod vec3;
+pub mod vec4;
+pub mod mat2;
+
+
+
+
