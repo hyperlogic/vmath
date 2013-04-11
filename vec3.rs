@@ -1,4 +1,4 @@
-use vec2::*;
+use mod vec2::Vec2;
 
 pub struct Vec3(f32, f32, f32);
 

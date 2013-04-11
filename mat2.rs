@@ -1,4 +1,4 @@
-use vec2::*;
+use vec2::Vec2;
 
 pub struct Mat2(Vec2, Vec2);
 

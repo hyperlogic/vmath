@@ -1,8 +1,9 @@
 extern mod vmath;
-use mod vmath::vec2::*;
-use mod vmath::vec3::*;
-use mod vmath::vec4::*;
-use mod vmath::mat2::*;
+
+use mod vmath::vec2::{Vec2};
+use mod vmath::vec3::{Vec3};
+use mod vmath::vec4::{Vec4};
+use mod vmath::mat2::{Mat2};
 
 fn main() {
     let pi = 3.141592653589793;

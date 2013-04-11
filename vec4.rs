@@ -1,7 +1,7 @@
-use vec2::*;
-use vec3::*;
+use vec2::Vec2;
+use vec3::Vec3;
 
-struct Vec4(f32, f32, f32, f32);
+pub struct Vec4(f32, f32, f32, f32);
 
 impl Vec4 {
     fn fmul(&self, rhs: f32) -> Vec4 {
