@@ -1,6 +1,9 @@
 pub struct Vec2(f32, f32);
 pub struct Vec3(f32, f32, f32);
 pub struct Vec4(f32, f32, f32, f32);
+
+pub struct Complex(f32, f32);
+
 pub struct Mat2(Vec2, Vec2);
 
 pub static pi:f32 = f32::consts::pi;
@@ -54,7 +57,7 @@ pub fn rand_f32(min: f32, max: f32) -> f32 {
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-// Vector2
+// Vec2
 
 /*
 pub fn rand_unit_vector() -> Vec2 {
@@ -67,12 +70,12 @@ impl Vec2 {
     fn lerp(a: Vec2, b: Vec2, t: f32) -> Vec2 {
         a + (b - a).fmul(t)
     }
-    fn fuzzy_eq(lhs: Vec2, rhs: Vec2) -> bool {
+    fn fuzzy_eq(lhs: &Vec2, rhs: &Vec2) -> bool {
         Vec2::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
     }
-    fn fuzzy_eq_epsilon(lhs: Vec2, rhs: Vec2, epsilon: f32) -> bool {
-        let Vec2(lx, ly) = lhs;
-        let Vec2(rx, ry) = rhs;
+    fn fuzzy_eq_epsilon(lhs: &Vec2, rhs: &Vec2, epsilon: f32) -> bool {
+        let Vec2(lx, ly) = *lhs;
+        let Vec2(rx, ry) = *rhs;
         (f32::abs(rx - lx) <= epsilon &&
          f32::abs(ry - ly) <= epsilon)
     }
@@ -131,7 +134,7 @@ impl ops::Sub<Vec2, Vec2> for Vec2 {
     }
 }
 
-// Vec2 * Vec2
+// *
 impl ops::Mul<Vec2, Vec2> for Vec2 {
     fn mul(&self, rhs: &Vec2) -> Vec2 {
         let Vec2(lx, ly) = *self;
@@ -140,8 +143,8 @@ impl ops::Mul<Vec2, Vec2> for Vec2 {
     }
 }
 
-// Vec2 / Vec2
-impl ops::Div<Vec2,Vec2> for Vec2 {
+// /
+impl ops::Div<Vec2, Vec2> for Vec2 {
     fn div(&self, rhs: &Vec2) -> Vec2 {
         let Vec2(lx, ly) = *self;
         let Vec2(rx, ry) = *rhs;
@@ -158,7 +161,7 @@ impl ops::Neg<Vec2> for Vec2 {
 }
 
 // []
-impl ops::Index<int,f32> for Vec2 {
+impl ops::Index<int, f32> for Vec2 {
     fn index(&self, i: &int) -> f32 {
         let Vec2(x, y) = *self;
         match *i {
@@ -186,19 +189,20 @@ impl ToStr for Vec2 {
     }
 }
 
-////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Vec3
 
 pub impl Vec3 {
     fn lerp(a: Vec3, b: Vec3, t: f32) -> Vec3 {
         a + (b - a).fmul(t)
     }
-    fn fuzzy_eq(lhs: Vec3, rhs: Vec3) -> bool {
+    fn fuzzy_eq(lhs: &Vec3, rhs: &Vec3) -> bool {
         Vec3::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
     }
-    fn fuzzy_eq_epsilon(lhs: Vec3, rhs: Vec3, epsilon: f32) -> bool {
-        let Vec3(lx, ly, lz) = lhs;
-        let Vec3(rx, ry, rz) = rhs;
-        (f32::abs(rx - lx) <= epsilon && 
+    fn fuzzy_eq_epsilon(lhs: &Vec3, rhs: &Vec3, epsilon: f32) -> bool {
+        let Vec3(lx, ly, lz) = *lhs;
+        let Vec3(rx, ry, rz) = *rhs;
+        (f32::abs(rx - lx) <= epsilon &&
          f32::abs(ry - ly) <= epsilon &&
          f32::abs(rz - lz) <= epsilon)
     }
@@ -235,7 +239,7 @@ pub impl Vec3 {
 }
 
 // +
-impl ops::Add<Vec3,Vec3> for Vec3 {
+impl ops::Add<Vec3, Vec3> for Vec3 {
     fn add(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
         let Vec3(rx, ry, rz) = *rhs;
@@ -244,7 +248,7 @@ impl ops::Add<Vec3,Vec3> for Vec3 {
 }
 
 // -
-impl ops::Sub<Vec3,Vec3> for Vec3 {
+impl ops::Sub<Vec3, Vec3> for Vec3 {
     fn sub(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
         let Vec3(rx, ry, rz) = *rhs;
@@ -253,7 +257,7 @@ impl ops::Sub<Vec3,Vec3> for Vec3 {
 }
 
 // *
-impl ops::Mul<Vec3,Vec3> for Vec3 {
+impl ops::Mul<Vec3, Vec3> for Vec3 {
     fn mul(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
         let Vec3(rx, ry, rz) = *rhs;
@@ -262,7 +266,7 @@ impl ops::Mul<Vec3,Vec3> for Vec3 {
 }
 
 // /
-impl ops::Div<Vec3,Vec3> for Vec3 {
+impl ops::Div<Vec3, Vec3> for Vec3 {
     fn div(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
         let Vec3(rx, ry, rz) = *rhs;
@@ -299,7 +303,7 @@ impl ops::Neg<Vec3> for Vec3 {
 }
 
 // []
-impl ops::Index<int,f32> for Vec3 {
+impl ops::Index<int, f32> for Vec3 {
     fn index(&self, i: &int) -> f32 {
         let Vec3(x, y, z) = *self;
         match *i {
@@ -328,18 +332,19 @@ impl ToStr for Vec3 {
     }
 }
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Vec4
 
 impl Vec4 {
     fn lerp(a: Vec4, b: Vec4, t: f32) -> Vec4 {
         a + (b - a).fmul(t)
     }
-    fn fuzzy_eq(lhs: Vec4, rhs: Vec4) -> bool {
+    fn fuzzy_eq(lhs: &Vec4, rhs: &Vec4) -> bool {
         Vec4::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
     }
-    fn fuzzy_eq_epsilon(lhs: Vec4, rhs: Vec4, epsilon: f32) -> bool {
-        let Vec4(lx, ly, lz, lw) = lhs;
-        let Vec4(rx, ry, rz, rw) = rhs;
+    fn fuzzy_eq_epsilon(lhs: &Vec4, rhs: &Vec4, epsilon: f32) -> bool {
+        let Vec4(lx, ly, lz, lw) = *lhs;
+        let Vec4(rx, ry, rz, rw) = *rhs;
         (f32::abs(rx - lx) <= epsilon &&
          f32::abs(ry - ly) <= epsilon &&
          f32::abs(rz - lz) <= epsilon &&
@@ -382,7 +387,7 @@ impl Vec4 {
 }
 
 // +
-impl ops::Add<Vec4,Vec4> for Vec4 {
+impl ops::Add<Vec4, Vec4> for Vec4 {
     fn add(&self, rhs: &Vec4) -> Vec4 {
         let Vec4(lx, ly, lz, lw) = *self;
         let Vec4(rx, ry, rz, rw) = *rhs;
@@ -391,7 +396,7 @@ impl ops::Add<Vec4,Vec4> for Vec4 {
 }
 
 // -
-impl ops::Sub<Vec4,Vec4> for Vec4 {
+impl ops::Sub<Vec4, Vec4> for Vec4 {
     fn sub(&self, rhs: &Vec4) -> Vec4 {
         let Vec4(lx, ly, lz, lw) = *self;
         let Vec4(rx, ry, rz, rw) = *rhs;
@@ -400,7 +405,7 @@ impl ops::Sub<Vec4,Vec4> for Vec4 {
 }
 
 // *
-impl ops::Mul<Vec4,Vec4> for Vec4 {
+impl ops::Mul<Vec4, Vec4> for Vec4 {
     fn mul(&self, rhs: &Vec4) -> Vec4 {
         let Vec4(lx, ly, lz, lw) = *self;
         let Vec4(rx, ry, rz, rw) = *rhs;
@@ -409,7 +414,7 @@ impl ops::Mul<Vec4,Vec4> for Vec4 {
 }
 
 // /
-impl ops::Div<Vec4,Vec4> for Vec4 {
+impl ops::Div<Vec4, Vec4> for Vec4 {
     fn div(&self, rhs: &Vec4) -> Vec4 {
         let Vec4(lx, ly, lz, lw) = *self;
         let Vec4(rx, ry, rz, rw) = *rhs;
@@ -435,7 +440,7 @@ impl ops::Neg<Vec4> for Vec4 {
 }
 
 // []
-impl ops::Index<int,f32> for Vec4 {
+impl ops::Index<int, f32> for Vec4 {
     fn index(&self, i: &int) -> f32 {
         let Vec4(x, y, z, w) = *self;
         match *i {
@@ -465,7 +470,155 @@ impl ToStr for Vec4 {
     }
 }
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Complex
+
+pub impl Complex {
+    fn from_v2(vec2: &Vec2) -> Complex {
+        let Vec2(real, imag) = *vec2;
+        Complex(real, imag)
+    }
+    fn fuzzy_eq(lhs: Complex, rhs: Complex) -> bool {
+        Complex::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
+    }
+    fn fuzzy_eq_epsilon(lhs: Complex, rhs: Complex, epsilon: f32) -> bool {
+        let Complex(l_real, l_imag) = lhs;
+        let Complex(r_real, r_imag) = rhs;
+        (f32::abs(r_real - l_real) <= epsilon &&
+         f32::abs(r_imag - l_imag) <= epsilon)
+    }
+    fn sqrt(z: &Complex) -> Complex {
+        let Complex(x, y) = *z;
+
+        if x == 0.0 {
+            let t = f32::sqrt(f32::abs(y) / 2.0);
+            if y < 0.0 {
+                Complex(t, -t)
+            } else {
+                Complex(t, t)
+            }
+        } else {
+            let t = f32::sqrt(2.0 * (z.len() + f32::abs(x)));
+            let u = t / 2.0;
+            if x > 0.0 {
+                Complex(u, y / t)
+            } else {
+                if y < 0.0 {
+                    Complex(f32::abs(y) / t, -u)
+                } else {
+                    Complex(f32::abs(y) / t, u)
+                }
+            }
+        }
+    }
+    fn exp(z: &Complex) -> Complex {
+        let Complex(real, imag) = *z;
+        let e = f32::exp(real);
+        Complex(e * f32::cos(imag), e * f32::sin(imag))
+    }
+    fn exp_i(theta: f32) -> Complex {
+        Complex(f32::cos(theta), f32::sin(theta))
+    }
+    fn ln(z: &Complex) -> Complex {
+        let Complex(real, imag) = *z;
+        Complex(f32::ln(z.len()), f32::atan2(imag, real))
+    }
+    fn len(&self) -> f32 {
+        let Complex(real, imag) = *self;
+        f32::sqrt(real * real + imag * imag)
+    }
+    fn dup(&self) -> Complex {
+        let Complex(real, imag) = *self;
+        Complex(real, imag)
+    }
+}
+
+// +
+impl ops::Add<Complex, Complex> for Complex {
+    fn add(&self, rhs: &Complex) -> Complex {
+        let Complex(l_real, l_imag) = *self;
+        let Complex(r_real, r_imag) = *rhs;
+        Complex(l_real + r_real, l_imag + r_imag)
+    }
+}
+
+// -
+impl ops::Sub<Complex, Complex> for Complex {
+    fn sub(&self, rhs: &Complex) -> Complex {
+        let Complex(l_real, l_imag) = *self;
+        let Complex(r_real, r_imag) = *rhs;
+        Complex(l_real - r_real, l_imag - r_imag)
+    }
+}
+
+// *
+impl ops::Mul<Complex, Complex> for Complex {
+    fn mul(&self, rhs: &Complex) -> Complex {
+        let Complex(a, b) = *self;
+        let Complex(c, d) = *rhs;
+        let ac = a * c;
+        let bd = b * d;
+        Complex(ac - bd, (a + b) * (c + d) - ac - bd)
+    }
+}
+
+// /
+impl ops::Div<Complex, Complex> for Complex {
+    fn div(&self, rhs: &Complex) -> Complex {
+        let Complex(a, b) = *self;
+        let Complex(c, d) = *rhs;
+        let denom = c * c - b * b;
+        Complex((a * c + b * d) / denom, (b * c - a * d) / denom)
+    }
+}
+
+// unary -
+impl ops::Neg<Complex> for Complex {
+    fn neg(&self) -> Complex {
+        let Complex(real, imag) = *self;
+        Complex(-real, -imag)
+    }
+}
+
+// ! (complex conjugate
+impl ops::Not<Complex> for Complex {
+    fn not(&self) -> Complex {
+        let Complex(real, imag) = *self;
+        Complex(real, -imag)
+    }
+}
+
+// []
+impl ops::Index<int,f32> for Complex {
+    fn index(&self, i: &int) -> f32 {
+        let Complex(real, imag) = *self;
+        match *i {
+            0 => real,
+            1 => imag,
+            _ => fail!(~"Complex: index out of bounds")
+        }
+    }
+}
+
+// ==
+impl cmp::Eq for Complex {
+    fn eq(&self, rhs: &Complex) -> bool {
+        let Complex(l_real, l_imag) = *self;
+        let Complex(r_real, r_imag) = *rhs;
+        l_real == r_real && l_imag == r_imag
+    }
+    fn ne(&self, rhs: &Complex) -> bool { !(*self).eq(rhs) }
+}
+
+impl ToStr for Complex {
+    fn to_str(&self) -> ~str {
+        let Complex(real, imag) = *self;
+        fmt!("Complex(%?, %?)", real, imag)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Mat2
 
 pub impl Mat2 {
     fn from_cols(col0: &Vec2, col1: &Vec2) -> Mat2 {
@@ -495,5 +648,3 @@ impl ToStr for Mat2 {
         fmt!("Mat4(%?, %?, %?, %?)", m0, m1, m2, m3)
     }
 }
-
-////////////////////////////////////////////////////
