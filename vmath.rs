@@ -3,6 +3,7 @@ pub struct Vec3(f32, f32, f32);
 pub struct Vec4(f32, f32, f32, f32);
 
 pub struct Complex(f32, f32);
+pub struct Quat(f32, f32, f32, f32);
 
 pub struct Mat4(Vec4, Vec4, Vec4, Vec4);
 
@@ -68,8 +69,8 @@ impl Vec2 {
         Vec2(f32::cos(theta), f32::sin(theta))
     }
     */
-    fn lerp(a: Vec2, b: Vec2, t: f32) -> Vec2 {
-        a + (b - a).fmul(t)
+    fn lerp(a: &Vec2, b: &Vec2, t: f32) -> Vec2 {
+        *a + (*b - *a).fmul(t)
     }
     fn fuzzy_eq(lhs: &Vec2, rhs: &Vec2) -> bool {
         Vec2::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
@@ -201,8 +202,8 @@ pub impl Vec3 {
         Vec3(f32::cos(theta) * f32::sin(phi), f32::sin(theta) * f32::sin(phi), f32::cos(phi));
     }
     */
-    fn lerp(a: Vec3, b: Vec3, t: f32) -> Vec3 {
-        a + (b - a).fmul(t)
+    fn lerp(a: &Vec3, b: &Vec3, t: f32) -> Vec3 {
+        *a + (*b - *a).fmul(t)
     }
     fn fuzzy_eq(lhs: &Vec3, rhs: &Vec3) -> bool {
         Vec3::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
@@ -344,8 +345,8 @@ impl ToStr for Vec3 {
 // Vec4
 
 impl Vec4 {
-    fn lerp(a: Vec4, b: Vec4, t: f32) -> Vec4 {
-        a + (b - a).fmul(t)
+    fn lerp(a: &Vec4, b: &Vec4, t: f32) -> Vec4 {
+        *a + (*b - *a).fmul(t)
     }
     fn fuzzy_eq(lhs: &Vec4, rhs: &Vec4) -> bool {
         Vec4::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
@@ -580,6 +581,15 @@ impl ops::Div<Complex, Complex> for Complex {
     }
 }
 
+// ^ dot product
+impl ops::BitXor<Quat, f32> for Quat {
+    fn bitxor(&self, rhs: &Quat) -> f32 {
+        let Quat(lx, ly, lz, lw) = *self;
+        let Quat(rx, ry, rz, rw) = *rhs;
+        lx * rx + ly * ry + lz * rz + lw * rw
+    }
+}
+
 // unary -
 impl ops::Neg<Complex> for Complex {
     fn neg(&self) -> Complex {
@@ -588,7 +598,7 @@ impl ops::Neg<Complex> for Complex {
     }
 }
 
-// ! (complex conjugate
+// ! complex conjugate
 impl ops::Not<Complex> for Complex {
     fn not(&self) -> Complex {
         let Complex(real, imag) = *self;
@@ -622,6 +632,134 @@ impl ToStr for Complex {
     fn to_str(&self) -> ~str {
         let Complex(real, imag) = *self;
         fmt!("Complex(%?, %?)", real, imag)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Quat
+
+pub impl Quat {
+    fn from_v4(vec4: &Vec4) -> Quat {
+        let Vec4(x, y, z, w) = *vec4;
+        Quat(x, y, z, w)
+    }
+    fn lerp(a: &Quat, b: &Quat, t: f32) -> Quat {
+        *a + (*b - *a).fmul(t)
+    }
+    fn nlerp(a: &Quat, b: &Quat, t: f32) -> Quat {
+        (*a + (*b - *a).fmul(t)).unit()
+    }
+    fn fuzzy_eq(lhs: &Quat, rhs: &Quat) -> bool {
+        Quat::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
+    }
+    fn fuzzy_eq_epsilon(lhs: &Quat, rhs: &Quat, epsilon: f32) -> bool {
+        let Quat(lx, ly, lz, lw) = *lhs;
+        let Quat(rx, ry, rz, rw) = *rhs;
+        (f32::abs(rx - lx) <= epsilon &&
+         f32::abs(ry - ly) <= epsilon &&
+         f32::abs(rz - lz) <= epsilon &&
+         f32::abs(rw - lw) <= epsilon)
+    }
+    fn len(&self) -> f32 {
+        f32::sqrt(*self ^ *self)
+    }
+    fn unit(&self) -> Quat {
+        self.fdiv(self.len())
+    }
+    fn dup(&self) -> Quat {
+        let Quat(x, y, z, w) = *self;
+        Quat(x, y, z, w)
+    }
+    fn fmul(&self, rhs: f32) -> Quat {
+        let Quat(lx, ly, lz, lw) = *self;
+        Quat(lx * rhs, ly * rhs, lz * rhs, lw * rhs)
+    }
+    fn fdiv(&self, rhs: f32) -> Quat {
+        let Quat(lx, ly, lz, lw) = *self;
+        Quat(lx / rhs, ly / rhs, lz / rhs, lw / rhs)
+    }
+    fn rot(&self, v: &Vec3) -> Vec3 {
+        let Vec3(x, y, z) = *v;
+        let q = (*self) * Quat(x, y, z, 0.0) * !(*self);
+        let Quat(i, j, k, _) = q;
+        Vec3(i, j, k)
+    }
+}
+
+// +
+impl ops::Add<Quat, Quat> for Quat {
+    fn add(&self, rhs: &Quat) -> Quat {
+        let Quat(lx, ly, lz, lw) = *self;
+        let Quat(rx, ry, rz, rw) = *rhs;
+        Quat(lx + rx, ly + ry, lz + rz, lw + rw)
+    }
+}
+
+// -
+impl ops::Sub<Quat, Quat> for Quat {
+    fn sub(&self, rhs: &Quat) -> Quat {
+        let Quat(lx, ly, lz, lw) = *self;
+        let Quat(rx, ry, rz, rw) = *rhs;
+        Quat(lx - rx, ly - ry, lz - rz, lw - rw)
+    }
+}
+
+// *
+impl ops::Mul<Quat, Quat> for Quat {
+    fn mul(&self, rhs: &Quat) -> Quat {
+        let Quat(l_i, l_j, l_k, l_r) = *self;
+        let Quat(r_i, r_j, r_k, r_r) = *rhs;
+        Quat(l_i * r_r + l_j * r_k - l_k * r_j + l_r * r_i,
+             -l_i * r_k + l_j * r_r + l_k * r_i + l_r * r_j,
+             l_i * r_j - l_j * r_i + l_k * r_r + l_r * r_k,
+             -l_i * r_i - l_j * r_j - l_k * r_k + l_r * r_r)
+    }
+}
+
+// unary -
+impl ops::Neg<Quat> for Quat {
+    fn neg(&self) -> Quat {
+        let Quat(x, y, z, w) = *self;
+        Quat(-x, -y, -z, -w)
+    }
+}
+
+// ! quaternion conjugate
+impl ops::Not<Quat> for Quat {
+    fn not(&self) -> Quat {
+        let Quat(x, y, z, w) = *self;
+        Quat(-x, -y, -z, w)
+    }
+}
+
+// []
+impl ops::Index<int, f32> for Quat {
+    fn index(&self, i: &int) -> f32 {
+        let Quat(x, y, z, w) = *self;
+        match *i {
+            0 => x,
+            1 => y,
+            2 => z,
+            3 => w,
+            _ => fail!(~"Quat: index out of bounds")
+        }
+    }
+}
+
+// ==
+impl cmp::Eq for Quat {
+    fn eq(&self, rhs: &Quat) -> bool {
+        let Quat(lx, ly, lz, lw) = *self;
+        let Quat(rx, ry, rz, rw) = *rhs;
+        lx == rx && ly == ry && lz == rz && lw == rw
+    }
+    fn ne(&self, rhs: &Quat) -> bool { !(*self).eq(rhs) }
+}
+
+impl ToStr for Quat {
+    fn to_str(&self) -> ~str {
+        let Quat(x, y, z, w) = *self;
+        fmt!("Quat(%?, %?, %?, %?)", x, y, z, w)
     }
 }
 
