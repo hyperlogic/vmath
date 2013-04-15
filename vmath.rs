@@ -4,7 +4,7 @@ pub struct Vec4(f32, f32, f32, f32);
 
 pub struct Complex(f32, f32);
 
-pub struct Mat2(Vec2, Vec2);
+pub struct Mat4(Vec4, Vec4, Vec4, Vec4);
 
 pub static pi:f32 = f32::consts::pi;
 
@@ -50,23 +50,24 @@ pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
 
 /*
 pub fn rand_int(min: int, max: int) -> int {
+    fail!(~"not implemented");
 }
 
 pub fn rand_f32(min: f32, max: f32) -> f32 {
+    fail!(~"not implemented");
 }
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vec2
 
-/*
-pub fn rand_unit_vector() -> Vec2 {
-    let theta = rand_f32(0.0, 2.0 * pi);
-    Vec2(f32::cos(theta), f32::sin(theta))
-}
-*/
-
 impl Vec2 {
+    /*
+    pub fn rand_unit() -> Vec2 {
+        let theta = rand_f32(0.0, 2.0 * pi);
+        Vec2(f32::cos(theta), f32::sin(theta))
+    }
+    */
     fn lerp(a: Vec2, b: Vec2, t: f32) -> Vec2 {
         a + (b - a).fmul(t)
     }
@@ -193,6 +194,13 @@ impl ToStr for Vec2 {
 // Vec3
 
 pub impl Vec3 {
+    /*
+    pub fn rand_unit() -> Vec2 {
+        let theta = rand_f32(0.0, 2.0 * pi);
+        let phi = rand_f32(0.0, 2.0 * pi);
+        Vec3(f32::cos(theta) * f32::sin(phi), f32::sin(theta) * f32::sin(phi), f32::cos(phi));
+    }
+    */
     fn lerp(a: Vec3, b: Vec3, t: f32) -> Vec3 {
         a + (b - a).fmul(t)
     }
@@ -232,7 +240,7 @@ pub impl Vec3 {
         let Vec3(lx, ly, lz) = *self;
         Vec3(lx / rhs, ly / rhs, lz / rhs)
     }
-    fn to_v2(&self) -> Vec2 {
+    fn to_vec2(&self) -> Vec2 {
         let Vec3(x, y, _) = *self;
         Vec2(x, y)
     }
@@ -376,11 +384,11 @@ impl Vec4 {
         let Vec4(lx, ly, lz, lw) = *self;
         Vec4(lx / rhs, ly / rhs, lz / rhs, lw / rhs)
     }
-    fn to_v2(&self) -> Vec2 {
+    fn to_vec2(&self) -> Vec2 {
         let Vec4(x, y, _, _) = *self;
         Vec2(x, y)
     }
-    fn to_v3(&self) -> Vec3 {
+    fn to_vec3(&self) -> Vec3 {
         let Vec4(x, y, z, _) = *self;
         Vec3(x, y, z)
     }
@@ -618,33 +626,110 @@ impl ToStr for Complex {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Mat2
+// Mat4
 
-pub impl Mat2 {
-    fn from_cols(col0: &Vec2, col1: &Vec2) -> Mat2 {
-        let Vec2(m0, m2) = *col0;
-        let Vec2(m1, m3) = *col1;
-        Mat2(Vec2(m0, m1), Vec2(m2, m3))
+pub impl Mat4 {
+    fn from_axes(x_axis: &Vec3, y_axis: &Vec3, z_axis: &Vec3, trans: &Vec3) -> Mat4 {
+        let Vec3(x0, x1, x2) = *x_axis;
+        let Vec3(y0, y1, y2) = *y_axis;
+        let Vec3(z0, z1, z2) = *z_axis;
+        let Vec3(t0, t1, t2) = *trans;
+        Mat4(Vec4(x0, x1, x2, 0.0),
+             Vec4(y0, y1, y2, 0.0),
+             Vec4(z0, z1, z2, 0.0),
+             Vec4(t0, t1, t2, 1.0))
     }
-    fn xform(&self, v: &Vec2) -> Vec2 {
-        let Mat2(Vec2(m0, m1), Vec2(m2, m3)) = *self;
-        let Vec2(vx, vy) = *v;
-        Vec2(m0 * vx + m1 * vy,
-             m2 * vx + m3 * vy)
+    fn from_cols(col0: &Vec4, col1: &Vec4, col2: &Vec4, col3: &Vec4) -> Mat4 {
+        let Vec4(x0, x1, x2, x3) = *col0;
+        let Vec4(y0, y1, y2, y3) = *col1;
+        let Vec4(z0, z1, z2, z3) = *col2;
+        let Vec4(t0, t1, t2, t3) = *col3;
+        Mat4(Vec4(x0, x1, x2, x3),
+             Vec4(y0, y1, y2, y3),
+             Vec4(z0, z1, z2, z3),
+             Vec4(t0, t1, t2, t3))
     }
-    fn transpose(&self) -> Mat2 {
-        let Mat2(row0, row1) = *self;
-        Mat2::from_cols(&row0, &row1)
+    fn from_rows(row0: &Vec4, row1: &Vec4, row2: &Vec4, row3: &Vec4) -> Mat4 {
+        let Vec4(x0, y0, z0, t0) = *row0;
+        let Vec4(x1, y1, z1, t1) = *row1;
+        let Vec4(x2, y2, z2, t2) = *row2;
+        let Vec4(x3, y3, z3, t3) = *row3;
+        Mat4(Vec4(x0, x1, x2, x3),
+             Vec4(y0, y1, y2, y3),
+             Vec4(z0, z1, z2, z3),
+             Vec4(t0, t1, t2, t3))
     }
-    fn det(&self) -> f32 {
-        let Mat2(Vec2(m0, m1), Vec2(m2, m3)) = *self;
-        m0 * m3 - m1 * m2
+    fn from_scale(scale: &Vec3) -> Mat4 {
+        let Vec3(sx, sy, sz) = *scale;
+        Mat4(Vec4(sx, 0.0, 0.0, 0.0),
+             Vec4(0.0, sy, 0.0, 0.0),
+             Vec4(0.0, 0.0, sz, 0.0),
+             Vec4(0.0, 0.0, 0.0, 1.0))
     }
+    fn identity() -> Mat4 {
+        Mat4(Vec4(1.0, 0.0, 0.0, 0.0),
+             Vec4(0.0, 1.0, 0.0, 0.0),
+             Vec4(0.0, 0.0, 1.0, 0.0),
+             Vec4(0.0, 0.0, 0.0, 1.0))
+    }
+    fn frustum(fovy: f32, aspect: f32, near: f32, far: f32) -> Mat4 {
+        let f = 1.0 / f32::tan(fovy / 2.0);
+        let col0 = Vec4(f / aspect, 0.0, 0.0, 0.0);
+        let col1 = Vec4(0.0, f, 0.0, 0.0);
+        let col2 = Vec4(0.0, 0.0, (far + near) / (near - far), -1.0);
+        let col3 = Vec4(0.0, 0.0, (2.0 * far * near) / (near - far), 0.0);
+        Mat4(col0, col1, col2, col3)
+    }
+    fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
+        let tx = -(right + left) / (right - left);
+        let ty = -(top + bottom) / (top - bottom);
+        let tz = -(far + near) / (far - near);
+        let col0 = Vec4(2.0 / (right - left), 0.0, 0.0, 0.0);
+        let col1 = Vec4(0.0, 2.0 / (top - bottom), 0.0, 0.0);
+        let col2 = Vec4(0.0, 0.0, -2.0 / (far - near), 0.0);
+        let col3 = Vec4(tx, ty, tz, 1.0);
+        Mat4(col0, col1, col2, col3)
+    }
+    fn xform4x4(&self, v: &Vec4) -> Vec4 {
+        let Mat4(col0, col1, col2, col3) = *self;
+        let Vec4(x, y, z, w) = *v;
+        col0.fmul(x) + col1.fmul(y) + col2.fmul(z) + col3.fmul(w)
+    }
+    fn xform3x4(&self, v: &Vec3) -> Vec3 {
+        let Mat4(col0, col1, col2, col3) = *self;
+        let Vec3(x, y, z) = *v;
+        (col0.fmul(x) + col1.fmul(y) + col2.fmul(z) + col3).to_vec3()
+    }
+    fn xform3x3(&self, v: &Vec3) -> Vec3 {
+        let Mat4(col0, col1, col2, _) = *self;
+        let Vec3(x, y, z) = *v;
+        (col0.fmul(x) + col1.fmul(y) + col2.fmul(z)).to_vec3()
+    }
+    fn transpose(&self) -> Mat4 {
+        let Mat4(col0, col1, col2, col3) = *self;
+        Mat4::from_rows(&col0, &col1, &col2, &col3)
+    }
+    fn ortho_inverse(&self) -> Mat4 {
+        let Mat4(_, _, _, pos) = *self;
+        let t = self.transpose();
+        let Vec3(x, y, z) = -t.xform3x3(&pos.to_vec3());
+        let Mat4(col0, col1, col2, _) = t;
+        Mat4(col0, col1, col2, Vec4(x, y, z, 1.0))
+    }
+    /*
+    fn full_inverse(&self) -> Mat4 {
+        fail!(~"not implemented");
+    }
+    */
 }
 
-impl ToStr for Mat2 {
+impl ToStr for Mat4 {
     fn to_str(&self) -> ~str {
-        let Mat2(Vec2(m0, m1), Vec2(m2, m3)) = *self;
-        fmt!("Mat4(%?, %?, %?, %?)", m0, m1, m2, m3)
+        let Mat4(Vec4(m0, m1, m2, m3),
+                 Vec4(m4, m5, m6, m7),
+                 Vec4(m8, m9, m10, m11),
+                 Vec4(m12, m13, m14, m15)) = *self;
+        fmt!("Mat4(col0 = %?, %?, %?, %?, col1 = %?, %?, %?, %?, col2 = %?, %?, %?, %?, col3 = %?, %?, %?, %?)",
+             m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15)
     }
 }
