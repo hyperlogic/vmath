@@ -9,4 +9,7 @@ $(EXE): $(SRC)
 clean:
 	rm -rf $(EXE)
 
+doc:
+	rust doc vmath.rs
+
 .PHONY: all

@@ -1,24 +1,104 @@
+/**
+ * Two element vector
+ *
+ * Supports the following operations:
+ *
+ * * Arithmetic operators for addition, subtraction, multiplication and division operators (+, -, *, /)
+ * * Dot Product (^)
+ * * Linear interpolation (lerp)
+ * * Fuzzy equality (fuzzy_eq, fuzzy_eq_epsilon)
+ * * Length (len)
+ * * Normalization (unit)
+ * * Array indexing ([])
+ * * Strict equality (==)
+ * * Converting to String (to_str)
+ */
 pub struct Vec2(f32, f32);
+
+/**
+ * Three element vector
+ *
+ * Supports the following operations:
+ *
+ * * Arithmetic operators for addition, subtraction, multiplication and division operators (+, -, *, /)
+ * * Dot Product (^)
+ * * Cross Product (%)
+ * * Linear interpolation (lerp)
+ * * Fuzzy equality (fuzzy_eq, fuzzy_eq_epsilon)
+ * * Length (len)
+ * * Normalization (unit)
+ * * Array indexing ([])
+ * * Strict equality (==)
+ * * Converting to String (to_str)
+ */
 pub struct Vec3(f32, f32, f32);
+
+/**
+ * Four element vector
+ *
+ * Supports the following operations:
+ *
+ * * Arithmetic operators for addition, subtraction, multiplication and division operators (+, -, *, /)
+ * * Dot Product (^)
+ * * Linear interpolation (lerp)
+ * * Fuzzy equality (fuzzy_eq, fuzzy_eq_epsilon)
+ * * Length (len)
+ * * Normalization (unit)
+ * * Array indexing ([])
+ * * Strict equality (==)
+ * * Converting to String (to_str)
+ */
 pub struct Vec4(f32, f32, f32, f32);
 
+/**
+ * Complex number type
+ *
+ * Supports the following operations:
+ *
+ * * Complex arithmetic operators for addition, subtraction, multiplication and division operators (+, -, *, /)
+ * * Complex conjugate (!)
+ * * Transcendental functions: (sqrt, exp, ln)
+ * * Array indexing ([])
+ * * Strict equality (==)
+ * * Converting to String (to_str)
+ */
 pub struct Complex(f32, f32);
+
+/**
+ * Quaternian number type
+ *
+ * Supports the following operations:
+ *
+ * * Quaternian arithmetic operators for addition, subtraction, multiplication (+, -, *)
+ * * Complex conjugate (!)
+ * * Rotating Vec3 instances
+ * * Linear interpolation (lerp, nlerp)
+ * * Array indexing ([])
+ * * Strict equality (==)
+ * * Converting to String (to_str)
+ */
 pub struct Quat(f32, f32, f32, f32);
 
+/**
+ * 4x4 Transformation Matrix
+ */
 pub struct Mat4(Vec4, Vec4, Vec4, Vec4);
 
 pub static pi:f32 = f32::consts::pi;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// Convert degrees to radians.
 pub fn deg_to_rad(deg: f32) -> f32 {
     deg * (pi / 180.0)
 }
 
+/// Convert radians to degrees.
 pub fn rad_to_deg(rad: f32) -> f32 {
     rad * (180.0 / pi)
 }
 
+/// Ensure that value is between a minimum and maximum
 pub fn clamp(val: f32, min: f32, max: f32) -> f32 {
     if val > max {
         max
@@ -29,22 +109,27 @@ pub fn clamp(val: f32, min: f32, max: f32) -> f32 {
     }
 }
 
+/// Ensure that angle is between -pi and pi
 pub fn limit_pi(theta: f32) -> f32 {
     mod_2pi(theta + pi) - pi
 }
 
+/// Ensure that angle is between 0 and 2 pi
 pub fn mod_2pi(theta: f32) -> f32 {
     theta - 2.0 * pi * f32::floor(theta / (2.0 * pi))
 }
 
+/// Compare two f32 values for equality within a small tolerance.
 pub fn fuzzy_eq(lhs: f32, rhs: f32) -> bool {
     fuzzy_eq_epsilon(lhs, rhs, 0.0001)
 }
 
+/// Compare two f32 values for equality within a given tolerance.
 pub fn fuzzy_eq_epsilon(lhs: f32, rhs: f32, epsilon: f32) -> bool {
     f32::abs(rhs - lhs) <= epsilon
 }
 
+/// Linearly interpolate between two values
 pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
