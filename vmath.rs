@@ -86,6 +86,16 @@ pub struct Mat4(Vec4, Vec4, Vec4, Vec4);
 
 pub static pi:f32 = f32::consts::pi;
 
+// TODO: HACK: I can't figure out how to use core::rand::RndUtil
+// Return a random f64 in the interval [0,1]
+fn gen_f64(rng:@rand::Rng) -> f64 {
+    let u1 = rng.next() as f64;
+    let u2 = rng.next() as f64;
+    let u3 = rng.next() as f64;
+    static scale : f64 = (u32::max_value as f64) + 1.0f64;
+    return ((u1 / scale + u2) / scale + u3) / scale;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Convert degrees to radians.
@@ -134,76 +144,91 @@ pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
-/*
+/// Generate a random int between (min, max)
 pub fn rand_int(min: int, max: int) -> int {
-    fail!(~"not implemented");
+    let rng = rand::Rng();
+    (rng.next() as int % (int::abs(min - max) + 1)) + min
 }
 
+/// Generate a random f32 between (min, max)
 pub fn rand_f32(min: f32, max: f32) -> f32 {
-    fail!(~"not implemented");
+    let rng = rand::Rng();
+    (gen_f64(rng) as f32) * f32::abs(max - min) + min
 }
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vec2
 
+/// Two element vector
 impl Vec2 {
-    /*
+
+    /// Generate a random unit vector
     pub fn rand_unit() -> Vec2 {
         let theta = rand_f32(0.0, 2.0 * pi);
         Vec2(f32::cos(theta), f32::sin(theta))
     }
-    */
+
+    /// Linearly interpolate between two vectors
     fn lerp(a: &Vec2, b: &Vec2, t: f32) -> Vec2 {
         *a + (*b - *a).fmul(t)
     }
+
+    /// Fuzzy comparison between two vectors
     fn fuzzy_eq(lhs: &Vec2, rhs: &Vec2) -> bool {
         Vec2::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
     }
+
+    /// Fuzzy comparison between two vectors
     fn fuzzy_eq_epsilon(lhs: &Vec2, rhs: &Vec2, epsilon: f32) -> bool {
         let Vec2(lx, ly) = *lhs;
         let Vec2(rx, ry) = *rhs;
         (f32::abs(rx - lx) <= epsilon &&
          f32::abs(ry - ly) <= epsilon)
     }
+
+    /// Length of vector
     fn len(&self) -> f32 {
         f32::sqrt(*self ^ *self)
     }
+
+    /// Ensure that vector has given length or larger
     fn min_len(&self, len: f32) -> Vec2 {
         let l = self.len();
         if l > len {
-            self.fdiv(l).fmul(len)
+            self.unit().fmul(len)
         } else {
             self.dup()
         }
     }
+
+    /// Generate vector of unit length but same direction
     fn unit(&self) -> Vec2 {
-        self.fdiv(self.len())
+        match *self {
+            Vec2(0.0, 0.0) => Vec2(1.0, 0.0),
+            _ => self.fdiv(self.len())
+        }
     }
+
+    /// Duplicate this vector
     fn dup(&self) -> Vec2 {
         let Vec2(x, y) = *self;
         Vec2(x, y)
     }
+
+    /// Multiply by scalar
     fn fmul(&self, rhs: f32) -> Vec2 {
         let Vec2(lx, ly) = *self;
         Vec2(lx * rhs, ly * rhs)
     }
+
+    /// Divide by a scalar
     fn fdiv(&self, rhs: f32) -> Vec2 {
         let Vec2(lx, ly) = *self;
         Vec2(lx / rhs, ly / rhs)
     }
 }
 
-// ^ dot product
-impl ops::BitXor<Vec2, f32> for Vec2 {
-    fn bitxor(&self, rhs: &Vec2) -> f32 {
-        let Vec2(lx, ly) = *self;
-        let Vec2(rx, ry) = *rhs;
-        lx * rx + ly * ry
-    }
-}
-
-// +
+/// Vector addition
 impl ops::Add<Vec2, Vec2> for Vec2 {
     fn add(&self, rhs: &Vec2) -> Vec2 {
         let Vec2(lx, ly) = *self;
@@ -212,7 +237,7 @@ impl ops::Add<Vec2, Vec2> for Vec2 {
     }
 }
 
-// -
+/// Vector subtraction
 impl ops::Sub<Vec2, Vec2> for Vec2 {
     fn sub(&self, rhs: &Vec2) -> Vec2 {
         let Vec2(lx, ly) = *self;
@@ -221,7 +246,7 @@ impl ops::Sub<Vec2, Vec2> for Vec2 {
     }
 }
 
-// *
+/// Component-wise multiplication
 impl ops::Mul<Vec2, Vec2> for Vec2 {
     fn mul(&self, rhs: &Vec2) -> Vec2 {
         let Vec2(lx, ly) = *self;
@@ -230,7 +255,16 @@ impl ops::Mul<Vec2, Vec2> for Vec2 {
     }
 }
 
-// /
+/// Vector dot product
+impl ops::BitXor<Vec2, f32> for Vec2 {
+    fn bitxor(&self, rhs: &Vec2) -> f32 {
+        let Vec2(lx, ly) = *self;
+        let Vec2(rx, ry) = *rhs;
+        lx * rx + ly * ry
+    }
+}
+
+/// Component-wise division
 impl ops::Div<Vec2, Vec2> for Vec2 {
     fn div(&self, rhs: &Vec2) -> Vec2 {
         let Vec2(lx, ly) = *self;
@@ -239,7 +273,7 @@ impl ops::Div<Vec2, Vec2> for Vec2 {
     }
 }
 
-// unary -
+/// Vector negation
 impl ops::Neg<Vec2> for Vec2 {
     fn neg(&self) -> Vec2 {
         let Vec2(x, y) = *self;
@@ -247,7 +281,7 @@ impl ops::Neg<Vec2> for Vec2 {
     }
 }
 
-// []
+/// Array indexing
 impl ops::Index<int, f32> for Vec2 {
     fn index(&self, i: &int) -> f32 {
         let Vec2(x, y) = *self;
@@ -259,7 +293,7 @@ impl ops::Index<int, f32> for Vec2 {
     }
 }
 
-// ==
+/// Strict equality
 impl cmp::Eq for Vec2 {
     fn eq(&self, rhs: &Vec2) -> bool {
         let Vec2(lx, ly) = *self;
@@ -269,6 +303,7 @@ impl cmp::Eq for Vec2 {
     fn ne(&self, rhs: &Vec2) -> bool { !(*self).eq(rhs) }
 }
 
+/// Convert to string
 impl ToStr for Vec2 {
     fn to_str(&self) -> ~str {
         let Vec2(x, y) = *self;
@@ -279,20 +314,28 @@ impl ToStr for Vec2 {
 ////////////////////////////////////////////////////////////////////////////////
 // Vec3
 
+/// Three element vector
 pub impl Vec3 {
-    /*
-    pub fn rand_unit() -> Vec2 {
+
+    /// Generate a random unit vector
+    pub fn rand_unit() -> Vec3 {
+        // TODO: not completely uniformly distributed
         let theta = rand_f32(0.0, 2.0 * pi);
         let phi = rand_f32(0.0, 2.0 * pi);
-        Vec3(f32::cos(theta) * f32::sin(phi), f32::sin(theta) * f32::sin(phi), f32::cos(phi));
+        Vec3(f32::cos(theta) * f32::sin(phi), f32::sin(theta) * f32::sin(phi), f32::cos(phi))
     }
-    */
+
+    /// Linearly interpolate between two vectors
     fn lerp(a: &Vec3, b: &Vec3, t: f32) -> Vec3 {
         *a + (*b - *a).fmul(t)
     }
+
+    /// Fuzzy comparison between two vectors
     fn fuzzy_eq(lhs: &Vec3, rhs: &Vec3) -> bool {
         Vec3::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
     }
+
+    /// Fuzzy comparison between two vectors
     fn fuzzy_eq_epsilon(lhs: &Vec3, rhs: &Vec3, epsilon: f32) -> bool {
         let Vec3(lx, ly, lz) = *lhs;
         let Vec3(rx, ry, rz) = *rhs;
@@ -300,9 +343,13 @@ pub impl Vec3 {
          f32::abs(ry - ly) <= epsilon &&
          f32::abs(rz - lz) <= epsilon)
     }
+
+    /// Length of vector
     fn len(&self) -> f32 {
         f32::sqrt(*self ^ *self)
     }
+
+    /// Ensure that vector has given length or larger
     fn min_len(&self, len: f32) -> Vec3 {
         let l = self.len();
         if l > len {
@@ -311,28 +358,41 @@ pub impl Vec3 {
             self.dup()
         }
     }
+
+    /// Generate vector of unit length but same direction
     fn unit(&self) -> Vec3 {
-        self.fdiv(self.len())
+        match *self {
+            Vec3(0.0, 0.0, 0.0) => Vec3(1.0, 0.0, 0.0),
+            _ => self.fdiv(self.len())
+        }
     }
+
+    /// Duplicate this vector
     fn dup(&self) -> Vec3 {
         let Vec3(x, y, z) = *self;
         Vec3(x, y, z)
     }
+
+    /// Multiply by scalar
     fn fmul(&self, rhs: f32) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
         Vec3(lx * rhs, ly * rhs, lz * rhs)
     }
+
+    /// Divide by a scalar
     fn fdiv(&self, rhs: f32) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
         Vec3(lx / rhs, ly / rhs, lz / rhs)
     }
+
+    /// Convert to a Vec2 by dropping last element.
     fn to_vec2(&self) -> Vec2 {
         let Vec3(x, y, _) = *self;
         Vec2(x, y)
     }
 }
 
-// +
+/// Vector addition
 impl ops::Add<Vec3, Vec3> for Vec3 {
     fn add(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
@@ -341,7 +401,7 @@ impl ops::Add<Vec3, Vec3> for Vec3 {
     }
 }
 
-// -
+// Vector subtraction
 impl ops::Sub<Vec3, Vec3> for Vec3 {
     fn sub(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
@@ -350,7 +410,7 @@ impl ops::Sub<Vec3, Vec3> for Vec3 {
     }
 }
 
-// *
+/// Component-wise multiplication
 impl ops::Mul<Vec3, Vec3> for Vec3 {
     fn mul(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
@@ -359,7 +419,7 @@ impl ops::Mul<Vec3, Vec3> for Vec3 {
     }
 }
 
-// /
+/// Component-wise division
 impl ops::Div<Vec3, Vec3> for Vec3 {
     fn div(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
@@ -368,7 +428,7 @@ impl ops::Div<Vec3, Vec3> for Vec3 {
     }
 }
 
-// ^ dot product
+/// Vector dot product
 impl ops::BitXor<Vec3, f32> for Vec3 {
     fn bitxor(&self, rhs: &Vec3) -> f32 {
         let Vec3(lx, ly, lz) = *self;
@@ -377,7 +437,7 @@ impl ops::BitXor<Vec3, f32> for Vec3 {
     }
 }
 
-// % cross product
+/// Vector cross product
 impl ops::Modulo<Vec3, Vec3> for Vec3 {
     fn modulo(&self, rhs: &Vec3) -> Vec3 {
         let Vec3(lx, ly, lz) = *self;
@@ -388,7 +448,7 @@ impl ops::Modulo<Vec3, Vec3> for Vec3 {
     }
 }
 
-// unary -
+/// Vector negation
 impl ops::Neg<Vec3> for Vec3 {
     fn neg(&self) -> Vec3 {
         let Vec3(x, y, z) = *self;
@@ -396,7 +456,7 @@ impl ops::Neg<Vec3> for Vec3 {
     }
 }
 
-// []
+/// Array indexing
 impl ops::Index<int, f32> for Vec3 {
     fn index(&self, i: &int) -> f32 {
         let Vec3(x, y, z) = *self;
@@ -409,7 +469,7 @@ impl ops::Index<int, f32> for Vec3 {
     }
 }
 
-// ==
+/// Vector equality
 impl cmp::Eq for Vec3 {
     fn eq(&self, rhs: &Vec3) -> bool {
         let Vec3(lx, ly, lz) = *self;
@@ -419,6 +479,7 @@ impl cmp::Eq for Vec3 {
     fn ne(&self, rhs: &Vec3) -> bool { !(*self).eq(rhs) }
 }
 
+/// Convert to string
 impl ToStr for Vec3 {
     fn to_str(&self) -> ~str {
         let Vec3(x, y, z) = *self;
@@ -429,6 +490,7 @@ impl ToStr for Vec3 {
 ////////////////////////////////////////////////////////////////////////////////
 // Vec4
 
+/// Four element vector
 impl Vec4 {
     fn lerp(a: &Vec4, b: &Vec4, t: f32) -> Vec4 {
         *a + (*b - *a).fmul(t)
@@ -456,7 +518,10 @@ impl Vec4 {
         }
     }
     fn unit(&self) -> Vec4 {
-        self.fdiv(self.len())
+        match *self {
+            Vec4(0.0, 0.0, 0.0, 0.0) => Vec4(1.0, 0.0, 0.0, 0.0),
+            _ => self.fdiv(self.len())
+        }
     }
     fn dup(&self) -> Vec4 {
         let Vec4(x, y, z, w) = *self;

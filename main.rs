@@ -14,6 +14,10 @@ fn main() {
     let bb = vmath::Complex::exp_i(theta);
     assert!(vmath::Complex::fuzzy_eq(aa, bb));
 
+    for 10.times {
+        println(fmt!("rand_int(0, 10) = %?", vmath::rand_int(0, 10)));
+    }
+
 
     let a = vmath::Vec3(1.0, 0.0, 0.0);
     let b = vmath::Vec3(0.0, 1.0, 0.0);
