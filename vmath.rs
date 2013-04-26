@@ -140,7 +140,7 @@ pub fn fuzzy_eq_epsilon(lhs: f32, rhs: f32, epsilon: f32) -> bool {
 }
 
 /// Linearly interpolate between two values
-pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
+pub fn lerp_f32(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
@@ -157,7 +157,63 @@ pub fn rand_f32(min: f32, max: f32) -> f32 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+trait FScale {
+    /// Multiply by scalar
+    fn fmul(&self, rhs: f32) -> Self;
+
+    /// Divide by a scalar
+    fn fdiv(&self, rhs: f32) -> Self;
+}
+
+trait FuzzyEq {
+    /// Fuzzy comparison between two vectors
+    fn fuzzy_eq_epsilon(&self, rhs: &Self, epsilon: f32) -> bool;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// Fuzzy comparison between two vectors
+pub fn fuzzy_eq_vec<T: FuzzyEq>(lhs: &T, rhs: &T) -> bool {
+    lhs.fuzzy_eq_epsilon(rhs, 0.0001)
+}
+
+/// Fuzzy comparison between two vectors
+pub fn fuzzy_eq_epsilon_vec<T: FuzzyEq>(lhs: &T, rhs: &T, epsilon: f32) -> bool {
+    lhs.fuzzy_eq_epsilon(rhs, epsilon)
+}
+
+/// Linearly interpolate between two vectors
+pub fn lerp_vec<T: Add<T, T> + Sub<T, T> + Mul<T, T> + FScale>(a: &T, b: &T, t: f32) -> T {
+    *a + (*b - *a).fmul(t)
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Vec2
+
+impl FScale for Vec2 {
+    /// Multiply by scalar
+    fn fmul(&self, rhs: f32) -> Vec2 {
+        let Vec2(lx, ly) = *self;
+        Vec2(lx * rhs, ly * rhs)
+    }
+
+    /// Divide by scalar
+    fn fdiv(&self, rhs: f32) -> Vec2 {
+        let Vec2(lx, ly) = *self;
+        Vec2(lx / rhs, ly / rhs)
+    }
+}
+
+impl FuzzyEq for Vec2 {
+    /// Fuzzy comparison between two vectors
+    fn fuzzy_eq_epsilon(&self, rhs: &Vec2, epsilon: f32) -> bool {
+        let Vec2(lx, ly) = *self;
+        let Vec2(rx, ry) = *rhs;
+        (f32::abs(rx - lx) <= epsilon &&
+         f32::abs(ry - ly) <= epsilon)
+    }
+}
 
 /// Two element vector
 impl Vec2 {
@@ -166,24 +222,6 @@ impl Vec2 {
     pub fn rand_unit() -> Vec2 {
         let theta = rand_f32(0.0, 2.0 * pi);
         Vec2(f32::cos(theta), f32::sin(theta))
-    }
-
-    /// Linearly interpolate between two vectors
-    fn lerp(a: &Vec2, b: &Vec2, t: f32) -> Vec2 {
-        *a + (*b - *a).fmul(t)
-    }
-
-    /// Fuzzy comparison between two vectors
-    fn fuzzy_eq(lhs: &Vec2, rhs: &Vec2) -> bool {
-        Vec2::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
-    }
-
-    /// Fuzzy comparison between two vectors
-    fn fuzzy_eq_epsilon(lhs: &Vec2, rhs: &Vec2, epsilon: f32) -> bool {
-        let Vec2(lx, ly) = *lhs;
-        let Vec2(rx, ry) = *rhs;
-        (f32::abs(rx - lx) <= epsilon &&
-         f32::abs(ry - ly) <= epsilon)
     }
 
     /// Length of vector
@@ -197,7 +235,7 @@ impl Vec2 {
         if l > len {
             self.unit().fmul(len)
         } else {
-            self.dup()
+            *self
         }
     }
 
@@ -209,22 +247,16 @@ impl Vec2 {
         }
     }
 
-    /// Duplicate this vector
-    fn dup(&self) -> Vec2 {
-        let Vec2(x, y) = *self;
-        Vec2(x, y)
+    /// get x element
+    fn x(&self) -> f32 {
+        let Vec2(x, _) = *self;
+        x
     }
 
-    /// Multiply by scalar
-    fn fmul(&self, rhs: f32) -> Vec2 {
-        let Vec2(lx, ly) = *self;
-        Vec2(lx * rhs, ly * rhs)
-    }
-
-    /// Divide by a scalar
-    fn fdiv(&self, rhs: f32) -> Vec2 {
-        let Vec2(lx, ly) = *self;
-        Vec2(lx / rhs, ly / rhs)
+    /// get y element
+    fn y(&self) -> f32 {
+        let Vec2(_, y) = *self;
+        y
     }
 }
 
@@ -314,6 +346,31 @@ impl ToStr for Vec2 {
 ////////////////////////////////////////////////////////////////////////////////
 // Vec3
 
+impl FScale for Vec3 {
+    /// Multiply by scalar
+    fn fmul(&self, rhs: f32) -> Vec3 {
+        let Vec3(lx, ly, lz) = *self;
+        Vec3(lx * rhs, ly * rhs, lz * rhs)
+    }
+
+    /// Divide by a scalar
+    fn fdiv(&self, rhs: f32) -> Vec3 {
+        let Vec3(lx, ly, lz) = *self;
+        Vec3(lx / rhs, ly / rhs, lz / rhs)
+    }
+}
+
+impl FuzzyEq for Vec3 {
+    /// Fuzzy comparison between two vectors
+    fn fuzzy_eq_epsilon(&self, rhs: &Vec3, epsilon: f32) -> bool {
+        let Vec3(lx, ly, lz) = *self;
+        let Vec3(rx, ry, rz) = *rhs;
+        (f32::abs(rx - lx) <= epsilon &&
+         f32::abs(ry - ly) <= epsilon &&
+         f32::abs(rz - lz) <= epsilon)
+    }
+}
+
 /// Three element vector
 pub impl Vec3 {
 
@@ -323,25 +380,6 @@ pub impl Vec3 {
         let theta = rand_f32(0.0, 2.0 * pi);
         let phi = rand_f32(0.0, 2.0 * pi);
         Vec3(f32::cos(theta) * f32::sin(phi), f32::sin(theta) * f32::sin(phi), f32::cos(phi))
-    }
-
-    /// Linearly interpolate between two vectors
-    fn lerp(a: &Vec3, b: &Vec3, t: f32) -> Vec3 {
-        *a + (*b - *a).fmul(t)
-    }
-
-    /// Fuzzy comparison between two vectors
-    fn fuzzy_eq(lhs: &Vec3, rhs: &Vec3) -> bool {
-        Vec3::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
-    }
-
-    /// Fuzzy comparison between two vectors
-    fn fuzzy_eq_epsilon(lhs: &Vec3, rhs: &Vec3, epsilon: f32) -> bool {
-        let Vec3(lx, ly, lz) = *lhs;
-        let Vec3(rx, ry, rz) = *rhs;
-        (f32::abs(rx - lx) <= epsilon &&
-         f32::abs(ry - ly) <= epsilon &&
-         f32::abs(rz - lz) <= epsilon)
     }
 
     /// Length of vector
@@ -355,7 +393,7 @@ pub impl Vec3 {
         if l > len {
             self.fdiv(l).fmul(len)
         } else {
-            self.dup()
+            *self
         }
     }
 
@@ -367,28 +405,28 @@ pub impl Vec3 {
         }
     }
 
-    /// Duplicate this vector
-    fn dup(&self) -> Vec3 {
-        let Vec3(x, y, z) = *self;
-        Vec3(x, y, z)
-    }
-
-    /// Multiply by scalar
-    fn fmul(&self, rhs: f32) -> Vec3 {
-        let Vec3(lx, ly, lz) = *self;
-        Vec3(lx * rhs, ly * rhs, lz * rhs)
-    }
-
-    /// Divide by a scalar
-    fn fdiv(&self, rhs: f32) -> Vec3 {
-        let Vec3(lx, ly, lz) = *self;
-        Vec3(lx / rhs, ly / rhs, lz / rhs)
-    }
-
     /// Convert to a Vec2 by dropping last element.
     fn to_vec2(&self) -> Vec2 {
         let Vec3(x, y, _) = *self;
         Vec2(x, y)
+    }
+
+    /// get x element
+    fn x(&self) -> f32 {
+        let Vec3(x, _, _) = *self;
+        x
+    }
+
+    /// get y element
+    fn y(&self) -> f32 {
+        let Vec3(_, y, _) = *self;
+        y
+    }
+
+    /// get z element
+    fn z(&self) -> f32 {
+        let Vec3(_, _, z) = *self;
+        z
     }
 }
 
@@ -490,14 +528,23 @@ impl ToStr for Vec3 {
 ////////////////////////////////////////////////////////////////////////////////
 // Vec4
 
+impl FScale for Vec4 {
+    /// Multiply by scalar
+    fn fmul(&self, rhs: f32) -> Vec4 {
+        let Vec4(lx, ly, lz, lw) = *self;
+        Vec4(lx * rhs, ly * rhs, lz * rhs, lw * rhs)
+    }
+
+    /// Divide by scalar
+    fn fdiv(&self, rhs: f32) -> Vec4 {
+        let Vec4(lx, ly, lz, lw) = *self;
+        Vec4(lx / rhs, ly / rhs, lz / rhs, lw / rhs)
+    }
+}
+
 /// Four element vector
 impl Vec4 {
-    fn lerp(a: &Vec4, b: &Vec4, t: f32) -> Vec4 {
-        *a + (*b - *a).fmul(t)
-    }
-    fn fuzzy_eq(lhs: &Vec4, rhs: &Vec4) -> bool {
-        Vec4::fuzzy_eq_epsilon(lhs, rhs, 0.0001)
-    }
+
     fn fuzzy_eq_epsilon(lhs: &Vec4, rhs: &Vec4, epsilon: f32) -> bool {
         let Vec4(lx, ly, lz, lw) = *lhs;
         let Vec4(rx, ry, rz, rw) = *rhs;
@@ -514,7 +561,7 @@ impl Vec4 {
         if l > len {
             self.fdiv(l).fmul(len)
         } else {
-            self.dup()
+            *self
         }
     }
     fn unit(&self) -> Vec4 {
@@ -523,18 +570,7 @@ impl Vec4 {
             _ => self.fdiv(self.len())
         }
     }
-    fn dup(&self) -> Vec4 {
-        let Vec4(x, y, z, w) = *self;
-        Vec4(x, y, z, w)
-    }
-    fn fmul(&self, rhs: f32) -> Vec4 {
-        let Vec4(lx, ly, lz, lw) = *self;
-        Vec4(lx * rhs, ly * rhs, lz * rhs, lw * rhs)
-    }
-    fn fdiv(&self, rhs: f32) -> Vec4 {
-        let Vec4(lx, ly, lz, lw) = *self;
-        Vec4(lx / rhs, ly / rhs, lz / rhs, lw / rhs)
-    }
+
     fn to_vec2(&self) -> Vec2 {
         let Vec4(x, y, _, _) = *self;
         Vec2(x, y)
@@ -542,6 +578,30 @@ impl Vec4 {
     fn to_vec3(&self) -> Vec3 {
         let Vec4(x, y, z, _) = *self;
         Vec3(x, y, z)
+    }
+
+    /// get x element
+    fn x(&self) -> f32 {
+        let Vec4(x, _, _, _) = *self;
+        x
+    }
+
+    /// get y element
+    fn y(&self) -> f32 {
+        let Vec4(_, y, _, _) = *self;
+        y
+    }
+
+    /// get z element
+    fn z(&self) -> f32 {
+        let Vec4(_, _, z, _) = *self;
+        z
+    }
+
+    /// get w element
+    fn w(&self) -> f32 {
+        let Vec4(_, _, _, w) = *self;
+        w
     }
 }
 
@@ -686,10 +746,6 @@ pub impl Complex {
         let Complex(real, imag) = *self;
         f32::sqrt(real * real + imag * imag)
     }
-    fn dup(&self) -> Complex {
-        let Complex(real, imag) = *self;
-        Complex(real, imag)
-    }
 }
 
 // +
@@ -815,10 +871,6 @@ pub impl Quat {
     }
     fn unit(&self) -> Quat {
         self.fdiv(self.len())
-    }
-    fn dup(&self) -> Quat {
-        let Quat(x, y, z, w) = *self;
-        Quat(x, y, z, w)
     }
     fn fmul(&self, rhs: f32) -> Quat {
         let Quat(lx, ly, lz, lw) = *self;

@@ -18,12 +18,13 @@ fn main() {
         println(fmt!("rand_int(0, 10) = %?", vmath::rand_int(0, 10)));
     }
 
-
     let a = vmath::Vec3(1.0, 0.0, 0.0);
     let b = vmath::Vec3(0.0, 1.0, 0.0);
-    let c = a + b - a;
+    let c = vmath::lerp_vec(&a, &b, 0.5);
     assert!(a % b == vmath::Vec3(0.0, 0.0, 1.0));
     assert!(a ^ b == 0.0);
+    assert!(vmath::fuzzy_eq_vec(&a, &a));
     println(fmt!("c = %s", c.to_str()));
     println(fmt!("c.len = %?", c.len()));
+    println(fmt!("1/2 = %?", vmath::lerp_f32(0.0, 1.0, 0.5)));
 }
