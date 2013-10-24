@@ -1,18 +1,28 @@
+use std::num::cos;
+use std::num::sin;
+
+//use vmath::Vec2;
+use vmath::Vec3;
+use vmath::Vec4;
+use vmath::Mat4;
+use vmath::Complex;
+//use vmath::Quat;
+
 mod vmath;
 
 fn main() {
     let theta = vmath::deg_to_rad(60.0);
-    let m = vmath::Mat4(vmath::Vec4(std::num::cos(theta), std::num::sin(theta), 0.0, 0.0),
-                        vmath::Vec4(std::num::sin(theta), -std::num::cos(theta), 0.0, 0.0),
-                        vmath::Vec4(0.0, 0.0, 1.0, 0.0),
-                        vmath::Vec4(0.0, 0.0, 0.0, 1.0));
-    let v = vmath::Vec4(1.0, 0.0, 0.0, 0.0);
+    let m = Mat4(Vec4(cos(theta), sin(theta), 0.0, 0.0),
+                 Vec4(sin(theta), -cos(theta), 0.0, 0.0),
+                 Vec4(0.0, 0.0, 1.0, 0.0),
+                 Vec4(0.0, 0.0, 0.0, 1.0));
+    let v = Vec4(1.0, 0.0, 0.0, 0.0);
     let v_prime = m.xform4x4(&-v);
     println(format!("v_prime = {}", v_prime.to_str()));
 
-    let aa = vmath::Complex(std::num::cos(theta), std::num::sin(theta));
-    let bb = vmath::Complex::exp_i(theta);
-    assert!(vmath::Complex::fuzzy_eq(aa, bb));
+    let aa = Complex(cos(theta), sin(theta));
+    let bb = Complex::exp_i(theta);
+    assert!(Complex::fuzzy_eq(aa, bb));
 
     /*
     for i in range(0, 10) {
@@ -20,10 +30,10 @@ fn main() {
     }
     */
 
-    let a = vmath::Vec3(1.0, 0.0, 0.0);
-    let b = vmath::Vec3(0.0, 1.0, 0.0);
+    let a = Vec3(1.0, 0.0, 0.0);
+    let b = Vec3(0.0, 1.0, 0.0);
     let c = vmath::lerp_vec(&a, &b, 0.5);
-    assert!(a % b == vmath::Vec3(0.0, 0.0, 1.0));
+    assert!(a % b == Vec3(0.0, 0.0, 1.0));
     assert!(a ^ b == 0.0);
     assert!(vmath::fuzzy_eq_vec(&a, &a));
     println(format!("c = {}", c.to_str()));

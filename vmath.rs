@@ -1,4 +1,11 @@
 use std;
+use std::num::sin;
+use std::num::cos;
+use std::num::tan;
+use std::num::atan2;
+use std::num::sqrt;
+use std::num::exp;
+use std::num::ln;
 
 /**
  * Two element vector
@@ -228,13 +235,13 @@ impl Vec2 {
     /// Generate a random unit vector
     pub fn rand_unit() -> Vec2 {
         let theta = rand_f32(0.0, 2.0 * pi);
-        Vec2(f32::cos(theta), f32::sin(theta))
+        Vec2(cos(theta), sin(theta))
     }
     */
 
     /// Length of vector
     fn len(&self) -> f32 {
-        std::num::sqrt(*self ^ *self)
+        sqrt(*self ^ *self)
     }
 
     /// Ensure that vector has given length or larger
@@ -388,13 +395,13 @@ impl Vec3 {
         // TODO: not completely uniformly distributed
         let theta = rand_f32(0.0, 2.0 * pi);
         let phi = rand_f32(0.0, 2.0 * pi);
-        Vec3(f32::cos(theta) * f32::sin(phi), f32::sin(theta) * f32::sin(phi), f32::cos(phi))
+        Vec3(cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi))
     }
     */
 
     /// Length of vector
     pub fn len(&self) -> f32 {
-       std::num::sqrt(*self ^ *self)
+       sqrt(*self ^ *self)
     }
 
     /// Ensure that vector has given length or larger
@@ -564,7 +571,7 @@ impl Vec4 {
          (rw - lw).abs() <= epsilon)
     }
     fn len(&self) -> f32 {
-        std::num::sqrt(*self ^ *self)
+        sqrt(*self ^ *self)
     }
     fn min_len(&self, len: f32) -> Vec4 {
         let l = self.len();
@@ -720,14 +727,14 @@ impl Complex {
         let Complex(x, y) = *z;
 
         if x == 0.0 {
-            let t = std::num::sqrt(y.abs() / 2.0);
+            let t = sqrt(y.abs() / 2.0);
             if y < 0.0 {
                 Complex(t, -t)
             } else {
                 Complex(t, t)
             }
         } else {
-            let t = std::num::sqrt(2.0 * (z.len() + x.abs()));
+            let t = sqrt(2.0 * (z.len() + x.abs()));
             let u = t / 2.0;
             if x > 0.0 {
                 Complex(u, y / t)
@@ -742,19 +749,19 @@ impl Complex {
     }
     pub fn exp(z: &Complex) -> Complex {
         let Complex(real, imag) = *z;
-        let e = std::num::exp(real);
-        Complex(e * std::num::cos(imag), e * std::num::sin(imag))
+        let e = exp(real);
+        Complex(e * cos(imag), e * sin(imag))
     }
     pub fn exp_i(theta: f32) -> Complex {
-        Complex(std::num::cos(theta), std::num::sin(theta))
+        Complex(cos(theta), sin(theta))
     }
     pub fn ln(z: &Complex) -> Complex {
         let Complex(real, imag) = *z;
-        Complex(std::num::ln(z.len()), std::num::atan2(imag, real))
+        Complex(ln(z.len()), atan2(imag, real))
     }
     pub fn len(&self) -> f32 {
         let Complex(real, imag) = *self;
-        std::num::sqrt(real * real + imag * imag)
+        sqrt(real * real + imag * imag)
     }
 }
 
@@ -877,7 +884,7 @@ impl Quat {
          (rw - lw).abs() <= epsilon)
     }
     pub fn len(&self) -> f32 {
-        std::num::sqrt(*self ^ *self)
+        sqrt(*self ^ *self)
     }
     pub fn unit(&self) -> Quat {
         self.fdiv(self.len())
@@ -1023,7 +1030,7 @@ impl Mat4 {
              Vec4(0.0, 0.0, 0.0, 1.0))
     }
     pub fn frustum(fovy: f32, aspect: f32, near: f32, far: f32) -> Mat4 {
-        let f = 1.0 / std::num::tan(fovy / 2.0);
+        let f = 1.0 / tan(fovy / 2.0);
         let col0 = Vec4(f / aspect, 0.0, 0.0, 0.0);
         let col1 = Vec4(0.0, f, 0.0, 0.0);
         let col2 = Vec4(0.0, 0.0, (far + near) / (near - far), -1.0);
