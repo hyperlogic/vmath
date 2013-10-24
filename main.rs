@@ -8,7 +8,7 @@ fn main() {
                         vmath::Vec4(0.0, 0.0, 0.0, 1.0));
     let v = vmath::Vec4(1.0, 0.0, 0.0, 0.0);
     let v_prime = m.xform4x4(&-v);
-    println(fmt!("v_prime = %s", v_prime.to_str()));
+    println(format!("v_prime = {}", v_prime.to_str()));
 
     let aa = vmath::Complex(std::num::cos(theta), std::num::sin(theta));
     let bb = vmath::Complex::exp_i(theta);
@@ -16,7 +16,7 @@ fn main() {
 
     /*
     for i in range(0, 10) {
-        println(fmt!("rand_int(0, 10) = %?", vmath::rand_int(0, 10)));
+        println(format!("rand_int(0, 10) = %?", vmath::rand_int(0, 10)));
     }
     */
 
@@ -26,7 +26,7 @@ fn main() {
     assert!(a % b == vmath::Vec3(0.0, 0.0, 1.0));
     assert!(a ^ b == 0.0);
     assert!(vmath::fuzzy_eq_vec(&a, &a));
-    println(fmt!("c = %s", c.to_str()));
-    println(fmt!("c.len = %?", c.len()));
-    println(fmt!("1/2 = %?", vmath::lerp_f32(0.0, 1.0, 0.5)));
+    println(format!("c = {}", c.to_str()));
+    println(format!("c.len = {}", c.len()));
+    println(format!("1/2 = {}", vmath::lerp_f32(0.0, 1.0, 0.5)));
 }

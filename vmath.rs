@@ -347,7 +347,7 @@ impl std::cmp::Eq for Vec2 {
 impl ToStr for Vec2 {
     fn to_str(&self) -> ~str {
         let Vec2(x, y) = *self;
-        fmt!("Vec2(%?, %?)", x, y)
+        format!("Vec2({}, {})", x, y)
     }
 }
 
@@ -531,7 +531,7 @@ impl std::cmp::Eq for Vec3 {
 impl ToStr for Vec3 {
     fn to_str(&self) -> ~str {
         let Vec3(x, y, z) = *self;
-        fmt!("Vec3(%?, %?, %?)", x, y, z)
+        format!("Vec3({}, {}, {})", x, y, z)
     }
 }
 
@@ -695,7 +695,7 @@ impl std::cmp::Eq for Vec4 {
 impl ToStr for Vec4 {
     fn to_str(&self) -> ~str {
         let Vec4(x, y, z, w) = *self;
-        fmt!("Vec4(%?, %?, %?, %?)", x, y, z, w)
+        format!("Vec4({}, {}, {}, {})", x, y, z, w)
     }
 }
 
@@ -847,7 +847,7 @@ impl std::cmp::Eq for Complex {
 impl ToStr for Complex {
     fn to_str(&self) -> ~str {
         let Complex(real, imag) = *self;
-        fmt!("Complex(%?, %?)", real, imag)
+        format!("Complex({}, {})", real, imag)
     }
 }
 
@@ -971,7 +971,7 @@ impl std::cmp::Eq for Quat {
 impl ToStr for Quat {
     fn to_str(&self) -> ~str {
         let Quat(x, y, z, w) = *self;
-        fmt!("Quat(%?, %?, %?, %?)", x, y, z, w)
+        format!("Quat({}, {}, {}, {})", x, y, z, w)
     }
 }
 
@@ -1079,7 +1079,7 @@ impl ToStr for Mat4 {
                  Vec4(m4, m5, m6, m7),
                  Vec4(m8, m9, m10, m11),
                  Vec4(m12, m13, m14, m15)) = *self;
-        fmt!("Mat4(col0 = %?, %?, %?, %?, col1 = %?, %?, %?, %?, col2 = %?, %?, %?, %?, col3 = %?, %?, %?, %?)",
+        format!("Mat4(col0 = {}, {}, {}, {}, col1 = {}, {}, {}, {}, col2 = {}, {}, {}, {}, col3 = {}, {}, {}, {})",
              m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15)
     }
 }
